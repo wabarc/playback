@@ -18,8 +18,8 @@ github.com/stretchr/testify v1.7.0 h1:nwc3DEeHmmLAfoZucVR881uASk0Mfjw8xYJ99tb5Cc
 github.com/stretchr/testify v1.7.0/go.mod h1:6Fq8oRcR53rry900zMqJjRRixrwX3KX962/h/Wwjteg=
 github.com/wabarc/archive.is v1.2.0 h1:hjsW30eO5MGChlkxJitK8BZefB2vR4y/4CriIYEX0VA=
 github.com/wabarc/archive.is v1.2.0/go.mod h1:y30zW5b4wiHeZ6h4dQN/63+9Q0l0VVitmkDZxv1hTPg=
-github.com/wabarc/archive.org v1.1.0 h1:pIK9V5+voAZqTYR1F7R5RCnswLYSsmh64/E8QLbkLvo=
-github.com/wabarc/archive.org v1.1.0/go.mod h1:f+VqacB+XUJKQ7MmGgZ9CDB1x1ypwkMKtPjEfRD/qUs=
+github.com/wabarc/archive.org v1.1.1 h1:cPqimnYuWyobxzvuzos9DrEzuF/YuUTtrQZWNxQSnTg=
+github.com/wabarc/archive.org v1.1.1/go.mod h1:f+VqacB+XUJKQ7MmGgZ9CDB1x1ypwkMKtPjEfRD/qUs=
 github.com/wabarc/helper v0.0.0-20210127120855-10af37cc2616/go.mod h1:N9P4r7Rn46p4nkWtXV6ztN3p5ACVnp++bgfwjTqSxQ8=
 github.com/wabarc/helper v0.0.0-20210407153720-1bfe98b427fe h1:V9yz2vQlSVLs51nlo0DAeETFOE57OvlYm98X1LKJA6U=
 github.com/wabarc/helper v0.0.0-20210407153720-1bfe98b427fe/go.mod h1:TuTZtoiOu984UWOf7FfX58JllKMjq7FCz701kB5W88E=
