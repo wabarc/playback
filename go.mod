@@ -5,7 +5,7 @@ go 1.16
 require (
 	github.com/andybalholm/cascadia v1.2.0 // indirect
 	github.com/wabarc/archive.is v1.2.0
-	github.com/wabarc/archive.org v1.1.0
+	github.com/wabarc/archive.org v1.1.2
 	github.com/wabarc/helper v0.0.0-20210407153720-1bfe98b427fe
 	github.com/wabarc/logger v0.0.0-20210417045349-d0d82e8e99ee
 	github.com/wabarc/memento v0.0.0-20210417125332-b8d39918d320
