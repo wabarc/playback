@@ -6,17 +6,20 @@ package playback
 
 import (
 	"encoding/json"
-	"fmt"
+	"errors"
 	"io/ioutil"
 	"net/http"
 	"net/url"
 	"os"
 	"regexp"
+	"strings"
 	"sync"
 
 	"github.com/wabarc/helper"
 	"github.com/wabarc/logger"
 )
+
+var errGHNotFound = errors.New("Not found")
 
 type github struct {
 	client *http.Client
@@ -66,6 +69,19 @@ func (gh *github) extract(links []string, scope string) (map[string]string, erro
 		re = `(?i)https?:\/\/telegra\.ph\/.+?\-\d{2}\-\d{2}`
 	}
 
+	// nolint:staticcheck
+	var strip = func(link string) string {
+		if u, err := url.Parse(link); err == nil {
+			u.Scheme = ""
+			link = u.String()
+			link = strings.TrimLeft(link, "//")
+			link = strings.TrimLeft(link, "www.")
+			link = strings.TrimLeft(link, "wap.")
+			link = strings.TrimLeft(link, "m.")
+		}
+		return link
+	}
+
 	for _, link := range collects {
 		wg.Add(1)
 		go func(link string) {
@@ -74,17 +90,17 @@ func (gh *github) extract(links []string, scope string) (map[string]string, erro
 			defer wg.Done()
 			data, err := gh.request(link)
 			if err != nil {
-				logger.Error("%v", err)
+				logger.Error("[playback] error: %v", err)
 				results[link] = "Unknow error"
 				return
 			}
 			results[link] = matchLink(re, parseIssue(data))
-		}(link)
+		}(strip(link))
 	}
 	wg.Wait()
 
 	if len(results) == 0 {
-		return results, fmt.Errorf("No found")
+		return results, errGHNotFound
 	}
 
 	return results, nil
@@ -99,14 +115,14 @@ func matchLink(regex, str string) string {
 		}
 		return uri.String()
 	}
-	return "No Found"
+	return "Not Found"
 }
 
 func collects(links []string) map[string]string {
 	collects := make(map[string]string)
 	for _, link := range links {
 		if !helper.IsURL(link) {
-			logger.Info(link + " is invalid url.")
+			logger.Info("[playback]" + link + " is invalid url.")
 			continue
 		}
 		collects[link] = link
@@ -117,26 +133,26 @@ func collects(links []string) map[string]string {
 func parseIssue(data []byte) string {
 	var dat map[string]interface{}
 	if err := json.Unmarshal(data, &dat); err != nil {
-		logger.Debug("Unmarshal json failed: %v", err)
+		logger.Debug("[playback] unmarshal json failed: %v", err)
 		return ""
 	}
 	items, ok := dat["items"].([]interface{})
 	if !ok {
-		logger.Debug("Parse items failed: %v", items)
+		logger.Debug("[playback] parse items failed: %v", items)
 		return ""
 	}
 	if len(items) == 0 {
-		logger.Debug("No Found")
+		logger.Debug("[playback] items not found")
 		return ""
 	}
 	item, ok := items[0].(map[string]interface{})
 	if !ok {
-		logger.Debug("Parse item field failed: %v", item)
+		logger.Debug("[playback] parse item field failed: %v", item)
 		return ""
 	}
 	body, ok := item["body"].(string)
 	if !ok {
-		logger.Debug("Parse body field failed: %v", body)
+		logger.Debug("[playback] parse body field failed: %v", body)
 		return ""
 	}
 
