@@ -10,11 +10,20 @@ to Internet Archive, archive.today, IPFS and beyond.
 package playback // import "github.com/wabarc/playback"
 
 import (
+	"os"
+
 	"github.com/wabarc/archive.is"
 	"github.com/wabarc/archive.org"
 	"github.com/wabarc/logger"
 	"github.com/wabarc/memento"
 )
+
+func init() {
+	debug := os.Getenv("DEBUG")
+	if debug == "true" || debug == "1" || debug == "on" {
+		logger.EnableDebug()
+	}
+}
 
 // Archives represents result from the time capsules.
 type Archives map[string]string
@@ -27,6 +36,7 @@ type Playback interface {
 	PH() Archives // Telegra.ph
 	IP() Archives // IPFS
 	TT() Archives // Time Travel, http://timetravel.mementoweb.org
+	GC() Archives // Google Cache
 }
 
 // Handle represents a playback handle.
@@ -77,6 +87,15 @@ func (h *Handle) TT() Archives {
 	uris, err := wbrc.Mementos(h.URLs)
 	if err != nil {
 		logger.Error("Playback %v from Time Travel failed, %v", h.URLs, err)
+	}
+
+	return uris
+}
+
+func (h *Handle) GC() Archives {
+	uris, err := google().cache(h.URLs)
+	if err != nil {
+		logger.Error("Playback %v from Google Cache failed, %v", h.URLs, err)
 	}
 
 	return uris
