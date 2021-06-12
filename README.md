@@ -7,13 +7,13 @@
 From source:
 
 ```sh
-$ go get github.com/wabarc/playback
+go get github.com/wabarc/playback/cmd/playback
 ```
 
 From [gobinaries.com](https://gobinaries.com):
 
 ```sh
-$ curl -sf https://gobinaries.com/wabarc/playback | sh
+curl -sf https://gobinaries.com/wabarc/playback | sh
 ```
 
 From [releases](https://github.com/wabarc/playback/releases)
