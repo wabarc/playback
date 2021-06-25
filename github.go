@@ -12,7 +12,6 @@ import (
 	"net/url"
 	"os"
 	"regexp"
-	"strings"
 	"sync"
 
 	"github.com/wabarc/helper"
@@ -32,12 +31,14 @@ func newGitHub() *github {
 }
 
 func (gh *github) request(str string) (b []byte, err error) {
-	endpoint := "https://api.github.com/search/issues?per_page=1&q="
+	endpoint := "https://api.github.com/search/issues?per_page=1&sort=created&order=desc&q="
+	if repo := os.Getenv("PLAYBACK_GITHUB_REPO"); repo != "" {
+		str += "+repo:" + repo
+	}
 
-	req, err := http.NewRequest("GET", endpoint+url.QueryEscape(str+" origin archived"), nil)
+	req, err := http.NewRequest("GET", endpoint+str+"+archived", nil)
 	req.Header.Add("Accept", "application/vnd.github.v3+json")
-	token := os.Getenv("PLAYBACK_GITHUB_PAT")
-	if token != "" {
+	if token := os.Getenv("PLAYBACK_GITHUB_PAT"); token != "" {
 		req.Header.Add("Authorization", "token "+token)
 	}
 
@@ -69,19 +70,6 @@ func (gh *github) extract(links []string, scope string) (map[string]string, erro
 		re = `(?i)https?:\/\/telegra\.ph\/.+?\-\d{2}\-\d{2}`
 	}
 
-	// nolint:staticcheck
-	var strip = func(link string) string {
-		if u, err := url.Parse(link); err == nil {
-			u.Scheme = ""
-			link = u.String()
-			link = strings.TrimLeft(link, "//")
-			link = strings.TrimLeft(link, "www.")
-			link = strings.TrimLeft(link, "wap.")
-			link = strings.TrimLeft(link, "m.")
-		}
-		return link
-	}
-
 	for _, link := range collects {
 		wg.Add(1)
 		go func(link string) {
@@ -95,7 +83,7 @@ func (gh *github) extract(links []string, scope string) (map[string]string, erro
 				return
 			}
 			results[link] = matchLink(re, parseIssue(data))
-		}(strip(link))
+		}(link)
 	}
 	wg.Wait()
 
