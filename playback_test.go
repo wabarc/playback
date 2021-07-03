@@ -5,215 +5,107 @@
 package playback
 
 import (
+	"context"
+	"net/url"
+	"strings"
 	"testing"
 )
 
 func TestPlayback(t *testing.T) {
+	t.Parallel()
+
+	uri := "https://example.com"
+	in, err := url.Parse(uri)
+	if err != nil {
+		t.Fatal(err)
+	}
+
 	tests := []struct {
 		name string
-		urls []string
-		got  int
+		play Playbacker
 	}{
 		{
-			name: "Without URLs",
-			urls: []string{},
-			got:  0,
+			name: "Internet Archive",
+			play: IA{URL: in},
 		},
 		{
-			name: "Has one invalid URL",
-			urls: []string{"foo bar", "https://example.com/"},
-			got:  1,
+			name: "archive.today",
+			play: IS{URL: in},
 		},
 		{
-			name: "URLs full matches",
-			urls: []string{"https://example.com/", "https://example.org/"},
-			got:  2,
+			name: "IPFS",
+			play: IP{URL: in},
+		},
+		{
+			name: "Telegra.ph",
+			play: PH{URL: in},
+		},
+		{
+			name: "Time Travel",
+			play: TT{URL: in},
+		},
+		{
+			name: "Google Cache",
+			play: GC{URL: in},
 		},
 	}
 
 	for _, test := range tests {
-		t.Run("IA_"+test.name, func(t *testing.T) {
-			var pb Playback = &Handle{URLs: test.urls}
-			got := pb.IA()
-			if len(got) != test.got {
-				t.Errorf("got = %d; want %d", len(got), test.got)
-			}
-			for orig, dest := range got {
-				if testing.Verbose() {
-					t.Log(orig, "=>", dest)
-				}
-			}
-		})
-		t.Run("IS_"+test.name, func(t *testing.T) {
-			var pb Playback = &Handle{URLs: test.urls}
-			got := pb.IS()
-			if len(got) != test.got {
-				t.Errorf("got = %d; want %d", len(got), test.got)
-			}
-			for orig, dest := range got {
-				if testing.Verbose() {
-					t.Log(orig, "=>", dest)
-				}
-			}
-		})
-		t.Run("PH_"+test.name, func(t *testing.T) {
-			var pb Playback = &Handle{URLs: test.urls}
-			got := pb.PH()
-			if len(got) != test.got {
-				t.Errorf("got = %d; want %d", len(got), test.got)
-			}
-			for orig, dest := range got {
-				if testing.Verbose() {
-					t.Log(orig, "=>", dest)
-				}
-			}
-		})
-		t.Run("IP_"+test.name, func(t *testing.T) {
-			var pb Playback = &Handle{URLs: test.urls}
-			got := pb.IP()
-			if len(got) != test.got {
-				t.Errorf("got = %d; want %d", len(got), test.got)
-			}
-			for orig, dest := range got {
-				if testing.Verbose() {
-					t.Log(orig, "=>", dest)
-				}
-			}
-		})
-		t.Run("TT_"+test.name, func(t *testing.T) {
-			var pb Playback = &Handle{URLs: test.urls}
-			got := pb.TT()
-			if len(got) != test.got {
-				t.Errorf("got = %d; want %d", len(got), test.got)
-			}
-			for orig, dest := range got {
-				if testing.Verbose() {
-					t.Log(orig, "=>", dest)
-				}
+		t.Run(test.name, func(t *testing.T) {
+			got := Playback(context.TODO(), test.play)
+			if got == "" {
+				t.Errorf("playback empty")
 			}
 		})
 	}
 }
 
 func TestExtractIPFSLink(t *testing.T) {
-	var got map[string]string
-
-	tests := []struct {
-		name string
-		urls []string
-		got  int
-	}{
-		{
-			name: "Without URLs",
-			urls: []string{},
-			got:  0,
-		},
-		{
-			name: "Has one invalid URL",
-			urls: []string{"foo bar", "https://example.com/"},
-			got:  1,
-		},
-		{
-			name: "URLs full matches",
-			urls: []string{"https://example.com/", "https://example.org/"},
-			got:  2,
-		},
+	uri := "https://example.com"
+	in, err := url.Parse(uri)
+	if err != nil {
+		t.Fatal(err)
 	}
 
 	gh := newGitHub()
-	for _, test := range tests {
-		t.Run(test.name, func(t *testing.T) {
-			got, _ = gh.extract(test.urls, "ipfs")
-			if len(got) != test.got {
-				t.Errorf("got = %d; want %d", len(got), test.got)
-			}
-			for orig, dest := range got {
-				if testing.Verbose() {
-					t.Log(orig, "=>", dest)
-				}
-			}
-		})
+	got, err := gh.extract(context.TODO(), in, "ipfs")
+	if err != nil {
+		t.Fatal(err)
+	}
+	if !strings.Contains(got, "ipfs.io") {
+		t.Log(uri, "=>", got)
+		t.Errorf("Unexpect extract ipfs link, got %s does not contains ipfs.io", got)
 	}
 }
 
 func TestExtractTelegraphLink(t *testing.T) {
-	var got map[string]string
-
-	tests := []struct {
-		name string
-		urls []string
-		got  int
-	}{
-		{
-			name: "Without URLs",
-			urls: []string{},
-			got:  0,
-		},
-		{
-			name: "Has one invalid URL",
-			urls: []string{"foo bar", "https://example.com/"},
-			got:  1,
-		},
-		{
-			name: "URLs full matches",
-			urls: []string{"https://example.com/", "https://example.org/"},
-			got:  2,
-		},
+	uri := "https://example.com"
+	in, err := url.Parse(uri)
+	if err != nil {
+		t.Fatal(err)
 	}
 
 	gh := newGitHub()
-	for _, test := range tests {
-		t.Run(test.name, func(t *testing.T) {
-			got, _ = gh.extract(test.urls, "telegraph")
-			if len(got) != test.got {
-				t.Errorf("got = %d; want %d", len(got), test.got)
-			}
-			for orig, dest := range got {
-				if testing.Verbose() {
-					t.Log(orig, "=>", dest)
-				}
-			}
-		})
+	got, err := gh.extract(context.TODO(), in, "telegraph")
+	if err != nil {
+		t.Fatal(err)
+	}
+	if !strings.Contains(got, "telegra.ph") {
+		t.Log(uri, "=>", got)
+		t.Errorf("Unexpect extract telegra.ph link, got %s does not contains telegra.ph", got)
 	}
 }
 
 func TestGoogleCache(t *testing.T) {
-	var got map[string]string
-
-	tests := []struct {
-		name string
-		urls []string
-		got  int
-	}{
-		{
-			name: "Without URLs",
-			urls: []string{},
-			got:  0,
-		},
-		{
-			name: "Has one invalid URL",
-			urls: []string{"foo bar", "https://example.com/"},
-			got:  1,
-		},
-		{
-			name: "URLs full matches",
-			urls: []string{"https://example.com/", "https://example.org/"},
-			got:  2,
-		},
+	uri := "https://example.com"
+	in, err := url.Parse(uri)
+	if err != nil {
+		t.Fatal(err)
 	}
 
-	g := google()
-	for _, test := range tests {
-		t.Run(test.name, func(t *testing.T) {
-			got, _ = g.cache(test.urls)
-			if len(got) != test.got {
-				t.Errorf("got = %d; want %d", len(got), test.got)
-			}
-			for orig, dest := range got {
-				if testing.Verbose() {
-					t.Log(orig, "=>", dest)
-				}
-			}
-		})
+	got, err := newGoogle().cache(context.TODO(), in)
+	if err != nil {
+		t.Log(uri, "=>", got)
+		t.Fatal(err)
 	}
 }

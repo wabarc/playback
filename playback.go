@@ -10,6 +10,9 @@ to Internet Archive, archive.today, IPFS and beyond.
 package playback // import "github.com/wabarc/playback"
 
 import (
+	"context"
+	"fmt"
+	"net/url"
 	"os"
 
 	"github.com/wabarc/archive.is"
@@ -25,78 +28,112 @@ func init() {
 	}
 }
 
-// Archives represents result from the time capsules.
-type Archives map[string]string
-
-// Playback is interface of the playback,
-// methods returns `Archives`.
-type Playback interface {
-	IA() Archives // Internet Archive
-	IS() Archives // archive.today
-	PH() Archives // Telegra.ph
-	IP() Archives // IPFS
-	TT() Archives // Time Travel, http://timetravel.mementoweb.org
-	GC() Archives // Google Cache
+// Collect represents a collections from the time capsules.
+type Collect struct {
+	// Arc string // Archive slot name, see config/config.go
+	Dst string // Archived destination URL
+	Src string // Source URL
+	// Ext string // Extra identifier
 }
 
-// Handle represents a playback handle.
-type Handle struct {
-	URLs []string
+type IA struct {
+	URL *url.URL
 }
 
-func (h *Handle) IA() Archives {
-	wbrc := &ia.Archiver{}
-	uris, err := wbrc.Playback(h.URLs)
+type IS struct {
+	URL *url.URL
+}
+
+// IPFS
+type IP struct {
+	URL *url.URL
+}
+
+type PH struct {
+	URL *url.URL
+}
+
+// Time Travel, http://timetravel.mementoweb.org
+type TT struct {
+	URL *url.URL
+}
+
+// Google Cache
+type GC struct {
+	URL *url.URL
+}
+
+// Playbacker is the interface that wraps the basic Playback method.
+//
+// Playback playback *url.URL from implementations from the Wayback Machine.
+// It returns the result of string from the upstream service.
+type Playbacker interface {
+	Playback(ctx context.Context) string
+}
+
+func (i IA) Playback(ctx context.Context) string {
+	arc := &ia.Archiver{}
+	dst, err := arc.Playback(ctx, i.URL)
 	if err != nil {
-		logger.Error("Playback %v from Internet Archive failed, %v", h.URLs, err)
+		logger.Error("[playback] %s from Internet Archive failed: %v", i.URL.String(), err)
+		return fmt.Sprint(err)
 	}
 
-	return uris
+	return dst
 }
 
-func (h *Handle) IS() Archives {
-	wbrc := &is.Archiver{}
-	uris, err := wbrc.Playback(h.URLs)
+func (i IS) Playback(ctx context.Context) string {
+	arc := &is.Archiver{}
+	dst, err := arc.Playback(ctx, i.URL)
 	if err != nil {
-		logger.Error("Playback %v from archive.today failed, %v", h.URLs, err)
+		logger.Error("[playback] %s from archive.today failed: %v", i.URL.String(), err)
+		return fmt.Sprint(err)
 	}
 
-	return uris
+	return dst
 }
 
-func (h *Handle) IP() Archives {
-	uris, err := newGitHub().extract(h.URLs, "ipfs")
+func (i IP) Playback(ctx context.Context) string {
+	dst, err := newGitHub().extract(ctx, i.URL, "ipfs")
 	if err != nil {
-		logger.Error("Playback %v from IPFS failed, %v", h.URLs, err)
+		logger.Error("[playback] %s from IPFS failed: %v", i.URL.String(), err)
+		return fmt.Sprint(err)
 	}
 
-	return uris
+	return dst
 }
 
-func (h *Handle) PH() Archives {
-	uris, err := newGitHub().extract(h.URLs, "telegraph")
+func (i PH) Playback(ctx context.Context) string {
+	dst, err := newGitHub().extract(ctx, i.URL, "telegraph")
 	if err != nil {
-		logger.Error("Playback %v from IPFS failed, %v", h.URLs, err)
+		logger.Error("[playback] %s from Telegra.ph failed: %v", i.URL.String(), err)
+		return fmt.Sprint(err)
 	}
 
-	return uris
+	return dst
 }
 
-func (h *Handle) TT() Archives {
-	wbrc := &memento.Memento{}
-	uris, err := wbrc.Mementos(h.URLs)
+func (i TT) Playback(ctx context.Context) string {
+	arc := &memento.Memento{}
+	dst, err := arc.Mementos(ctx, i.URL)
 	if err != nil {
-		logger.Error("Playback %v from Time Travel failed, %v", h.URLs, err)
+		logger.Error("[playback] %s from Time Travel failed: %v", i.URL.String(), err)
+		return fmt.Sprint(err)
 	}
 
-	return uris
+	return dst
 }
 
-func (h *Handle) GC() Archives {
-	uris, err := google().cache(h.URLs)
+func (i GC) Playback(ctx context.Context) string {
+	dst, err := newGoogle().cache(ctx, i.URL)
 	if err != nil {
-		logger.Error("Playback %v from Google Cache failed, %v", h.URLs, err)
+		logger.Error("[playback] %s from Google Cache failed: %v", i.URL.String(), err)
+		return fmt.Sprint(err)
 	}
 
-	return uris
+	return dst
+}
+
+func Playback(ctx context.Context, p Playbacker) string {
+	return p.Playback(ctx)
 }

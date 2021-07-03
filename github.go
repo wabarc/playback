@@ -5,6 +5,7 @@
 package playback
 
 import (
+	"context"
 	"encoding/json"
 	"errors"
 	"io/ioutil"
@@ -12,7 +13,6 @@ import (
 	"net/url"
 	"os"
 	"regexp"
-	"sync"
 
 	"github.com/wabarc/helper"
 	"github.com/wabarc/logger"
@@ -30,13 +30,13 @@ func newGitHub() *github {
 	}
 }
 
-func (gh *github) request(str string) (b []byte, err error) {
+func (gh *github) request(ctx context.Context, str string) (b []byte, err error) {
 	endpoint := "https://api.github.com/search/issues?per_page=1&sort=created&order=desc&q="
 	if repo := os.Getenv("PLAYBACK_GITHUB_REPO"); repo != "" {
 		str += "+repo:" + repo
 	}
 
-	req, err := http.NewRequest("GET", endpoint+str+"+archived", nil)
+	req, err := http.NewRequestWithContext(ctx, http.MethodGet, endpoint+str+"+archived", nil)
 	req.Header.Add("Accept", "application/vnd.github.v3+json")
 	if token := os.Getenv("PLAYBACK_GITHUB_PAT"); token != "" {
 		req.Header.Add("Authorization", "token "+token)
@@ -56,42 +56,26 @@ func (gh *github) request(str string) (b []byte, err error) {
 	return body, nil
 }
 
-func (gh *github) extract(links []string, scope string) (map[string]string, error) {
-	collects := collects(links)
-	results := make(map[string]string)
-
+func (gh *github) extract(ctx context.Context, input *url.URL, scope string) (string, error) {
 	var re string
-	var mu sync.Mutex
-	var wg sync.WaitGroup
-
 	if scope == "ipfs" {
 		re = `(?i)https?:\/\/ipfs\.io\/ipfs\/\w{46}`
 	} else {
 		re = `(?i)https?:\/\/telegra\.ph\/.+?\-\d{2}\-\d{2}`
 	}
 
-	for _, link := range collects {
-		wg.Add(1)
-		go func(link string) {
-			mu.Lock()
-			defer mu.Unlock()
-			defer wg.Done()
-			data, err := gh.request(link)
-			if err != nil {
-				logger.Error("[playback] error: %v", err)
-				results[link] = "Unknow error"
-				return
-			}
-			results[link] = matchLink(re, parseIssue(data))
-		}(link)
+	data, err := gh.request(ctx, input.String())
+	if err != nil {
+		logger.Error("[playback] error: %v", err)
+		return "", err
 	}
-	wg.Wait()
+	dst := matchLink(re, parseIssue(data))
 
-	if len(results) == 0 {
-		return results, errGHNotFound
+	if dst == "" {
+		return "", errGHNotFound
 	}
 
-	return results, nil
+	return dst, nil
 }
 
 func matchLink(regex, str string) string {
@@ -106,6 +90,7 @@ func matchLink(regex, str string) string {
 	return "Not Found"
 }
 
+// nolint:deadcode,unused
 func collects(links []string) map[string]string {
 	collects := make(map[string]string)
 	for _, link := range links {

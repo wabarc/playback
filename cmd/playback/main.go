@@ -1,8 +1,10 @@
 package main
 
 import (
+	"context"
 	"flag"
 	"fmt"
+	"net/url"
 	"os"
 
 	"github.com/wabarc/playback"
@@ -35,23 +37,29 @@ func main() {
 
 	type collects struct {
 		slot string
-		stub map[string]string
+		stub playback.Playbacker
 	}
 
-	var pb playback.Playback = &playback.Handle{URLs: args}
-
-	results := []collects{
-		{slot: "Internet Archive", stub: pb.IA()},
-		{slot: "archive.today", stub: pb.IS()},
-		{slot: "IPFS", stub: pb.IP()},
-		{slot: "Telegraph", stub: pb.PH()},
-		{slot: "Time Travel", stub: pb.TT()},
-	}
-	for _, collect := range results {
-		fmt.Printf("[%s]\n", collect.slot)
-		for orig, dest := range collect.stub {
-			fmt.Println(orig, "=>", dest)
+	var wrap = func(input *url.URL) []collects {
+		return []collects{
+			{slot: "Internet Archive", stub: playback.IA{URL: input}},
+			{slot: "archive.today", stub: playback.IS{URL: input}},
+			{slot: "IPFS", stub: playback.IP{URL: input}},
+			{slot: "Telegraph", stub: playback.PH{URL: input}},
+			{slot: "Time Travel", stub: playback.TT{URL: input}},
 		}
-		fmt.Printf("\n")
+	}
+	for _, arg := range args {
+		input, err := url.Parse(arg)
+		if err != nil {
+			fmt.Println(arg, "=>", fmt.Sprint(err))
+			continue
+		}
+		for _, collect := range wrap(input) {
+			fmt.Printf("[%s]\n", collect.slot)
+			dest := playback.Playback(context.TODO(), collect.stub)
+			fmt.Println(arg, "=>", dest)
+			fmt.Printf("\n")
+		}
 	}
 }
