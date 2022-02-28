@@ -38,4 +38,4 @@ jobs:
           fetch-depth: 0
 
       - name: Golang linter
-        uses: golangci/golangci-lint-action@v2
+        uses: golangci/golangci-lint-action@v3.1.0
