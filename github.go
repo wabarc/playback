@@ -7,7 +7,6 @@ package playback
 import (
 	"context"
 	"encoding/json"
-	"errors"
 	"io/ioutil"
 	"net/http"
 	"net/url"
@@ -17,8 +16,6 @@ import (
 	"github.com/wabarc/helper"
 	"github.com/wabarc/logger"
 )
-
-var errGHNotFound = errors.New("Not found")
 
 type github struct {
 	client *http.Client
@@ -72,7 +69,7 @@ func (gh *github) extract(ctx context.Context, input *url.URL, scope string) (st
 	dst := matchLink(re, parseIssue(data))
 
 	if dst == "" {
-		return "", errGHNotFound
+		return "", errNotFound
 	}
 
 	return dst, nil
@@ -87,7 +84,7 @@ func matchLink(regex, str string) string {
 		}
 		return uri.String()
 	}
-	return "Not Found"
+	return ""
 }
 
 // nolint:deadcode,unused

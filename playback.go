@@ -21,6 +21,8 @@ import (
 	"github.com/wabarc/memento"
 )
 
+var errNotFound = fmt.Errorf("Not found")
+
 func init() {
 	debug := os.Getenv("DEBUG")
 	if debug == "true" || debug == "1" || debug == "on" {
@@ -95,9 +97,12 @@ func (i IS) Playback(ctx context.Context) string {
 
 func (i IP) Playback(ctx context.Context) string {
 	dst, err := newGitHub().extract(ctx, i.URL, "ipfs")
-	if err != nil {
+	if err != nil && err != errNotFound {
 		logger.Error("[playback] %s from IPFS failed: %v", i.URL.String(), err)
 		return fmt.Sprint(err)
+	}
+	if dst == "" {
+		dst, _ = newMeili().extract(ctx, i.URL, "ipfs")
 	}
 
 	return dst
@@ -105,9 +110,12 @@ func (i IP) Playback(ctx context.Context) string {
 
 func (i PH) Playback(ctx context.Context) string {
 	dst, err := newGitHub().extract(ctx, i.URL, "telegraph")
-	if err != nil {
+	if err != nil && err != errNotFound {
 		logger.Error("[playback] %s from Telegra.ph failed: %v", i.URL.String(), err)
 		return fmt.Sprint(err)
+	}
+	if dst == "" {
+		dst, _ = newMeili().extract(ctx, i.URL, "telegraph")
 	}
 
 	return dst
