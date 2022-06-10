@@ -14,6 +14,7 @@ import (
 	"net/http"
 	"net/url"
 	"os"
+	"strings"
 
 	"github.com/wabarc/logger"
 )
@@ -105,7 +106,9 @@ func (m *meili) extract(ctx context.Context, input *url.URL, scope string) (dst 
 		} `json:"hits"`
 	}
 
-	resp, err := m.request(ctx, input.String())
+	// Remove scheme
+	str := strings.TrimLeft(input.String(), input.Scheme)
+	resp, err := m.request(ctx, str)
 	if err != nil {
 		logger.Error("playback from meilisearch failed: %v", err)
 		return "", err
