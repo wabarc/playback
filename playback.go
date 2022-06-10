@@ -102,7 +102,10 @@ func (i IP) Playback(ctx context.Context) string {
 		return fmt.Sprint(err)
 	}
 	if dst == "" {
-		dst, _ = newMeili().extract(ctx, i.URL, "ipfs")
+		dst, err = newMeili().extract(ctx, i.URL, "ipfs")
+	}
+	if err != nil {
+		return fmt.Sprint(err)
 	}
 
 	return dst
@@ -115,7 +118,10 @@ func (i PH) Playback(ctx context.Context) string {
 		return fmt.Sprint(err)
 	}
 	if dst == "" {
-		dst, _ = newMeili().extract(ctx, i.URL, "telegraph")
+		dst, err = newMeili().extract(ctx, i.URL, "telegraph")
+	}
+	if err != nil {
+		return fmt.Sprint(err)
 	}
 
 	return dst
