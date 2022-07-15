@@ -56,13 +56,11 @@ func (m *meili) request(ctx context.Context, str string) (b []byte, err error) {
 		Query                string   `json:"q"`
 		Limit                int      `json:"limit"`
 		Sort                 []string `json:"sort"`
-		Matches              bool     `json:"matches"`
 		AttributesToRetrieve []string `json:"attributesToRetrieve"`
 	}{
 		Query:                fmt.Sprintf(`"%s"`, str),
 		Limit:                1,
 		Sort:                 []string{"id:desc"},
-		Matches:              true,
 		AttributesToRetrieve: []string{"ip", "ph"},
 	}
 	buf, err := json.Marshal(params)
