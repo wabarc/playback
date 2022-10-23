@@ -1,6 +1,6 @@
 module github.com/wabarc/playback
 
-go 1.16
+go 1.13
 
 require (
 	github.com/PuerkitoBio/goquery v1.7.0 // indirect
