@@ -11,6 +11,5 @@ require (
 	github.com/wabarc/helper v0.0.0-20220320101038-dbb2ea36249b
 	github.com/wabarc/logger v0.0.0-20210417045349-d0d82e8e99ee
 	github.com/wabarc/memento v0.0.0-20210703205719-adc2f8ab8bae
-	golang.org/x/crypto v0.0.0-20210616213533-5ff15b29337e // indirect
-	golang.org/x/sys v0.0.0-20210630005230-0f9fa26af87c // indirect
+	golang.org/x/crypto v0.1.0 // indirect
 )
