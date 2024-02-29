@@ -1,3 +1,7 @@
+# Copyright 2020 Wayback Archiver. All rights reserved.
+# Use of this source code is governed by the GNU GPL v3
+# license that can be found in the LICENSE file.
+#
 name: Linter
 
 on:
@@ -9,33 +13,42 @@ on:
       - '**'
     types: [ opened, synchronize, reopened ]
 
+permissions:
+  contents: read
+
 jobs:
-  lint:
-    runs-on: ubuntu-latest
-    steps:
-      - name: Checkout default branch
-        uses: actions/checkout@v2
-        with:
-          fetch-depth: 0
+  super-linter:
+    name: Super Linter
+    uses: wabarc/.github/.github/workflows/reusable-super-linter.yml@main
+    permissions:
+      contents: read
+      packages: read
+      statuses: write
 
-      - name: Lint Code Base
-        uses: github/super-linter@v4
-        env:
-          DEFAULT_BRANCH: 'main'
-          VALIDATE_MARKDOWN: true
-          VALIDATE_SHELL_SHFMT: true
-          VALIDATE_DOCKERFILE: true
-          VALIDATE_BASH: true
-          VALIDATE_BASH_EXEC: true
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+  golangci:
+    name: golangci-lint
+    uses: wabarc/.github/.github/workflows/reusable-golangci.yml@main
+    with:
+      egress-policy: 'audit'
 
-  go:
-    runs-on: ubuntu-latest
-    steps:
-      - name: Checkout default branch
-        uses: actions/checkout@v2
-        with:
-          fetch-depth: 0
+  shellcheck:
+    name: ShellCheck
+    uses: wabarc/.github/.github/workflows/reusable-shellcheck.yml@main
 
-      - name: Golang linter
-        uses: golangci/golangci-lint-action@v2
+  misspell:
+    name: Misspell
+    uses: wabarc/.github/.github/workflows/reusable-misspell.yml@main
+
+  alex:
+    name: Alex
+    uses: wabarc/.github/.github/workflows/reusable-alex.yml@main
+
+  urlcheck:
+    name: URLCheck
+    uses: wabarc/.github/.github/workflows/reusable-urlcheck.yml@main
+    with:
+      exclude-patterns: '.onion,https://github.com/,https://repo.wabarc.eu.org/,twitter.com,example.com'
+
+  goreportcard:
+    name: Go Report Card
+    uses: wabarc/.github/.github/workflows/reusable-goreportcard.yml@main
