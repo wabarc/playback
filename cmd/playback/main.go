@@ -44,6 +44,7 @@ func main() {
 		return []collects{
 			{slot: "Internet Archive", stub: playback.IA{URL: input}},
 			{slot: "archive.today", stub: playback.IS{URL: input}},
+			{slot: "Ghostarchive", stub: playback.GA{URL: input}},
 			{slot: "IPFS", stub: playback.IP{URL: input}},
 			{slot: "Telegraph", stub: playback.PH{URL: input}},
 			{slot: "Time Travel", stub: playback.TT{URL: input}},

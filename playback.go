@@ -17,6 +17,7 @@ import (
 
 	"github.com/wabarc/archive.is"
 	"github.com/wabarc/archive.org"
+	"github.com/wabarc/ghostarchive"
 	"github.com/wabarc/logger"
 	"github.com/wabarc/memento"
 )
@@ -55,6 +56,10 @@ type PH struct {
 	URL *url.URL
 }
 
+type GA struct {
+	URL *url.URL
+}
+
 // Time Travel, http://timetravel.mementoweb.org
 type TT struct {
 	URL *url.URL
@@ -89,6 +94,17 @@ func (i IS) Playback(ctx context.Context) string {
 	dst, err := arc.Playback(ctx, i.URL)
 	if err != nil {
 		logger.Error("[playback] %s from archive.today failed: %v", i.URL.String(), err)
+		return fmt.Sprint(err)
+	}
+
+	return dst
+}
+
+func (g GA) Playback(ctx context.Context) string {
+	arc := &ga.Archiver{}
+	dst, err := arc.Playback(ctx, g.URL)
+	if err != nil {
+		logger.Error("[playback] %s from Ghostarchive failed: %v", g.URL.String(), err)
 		return fmt.Sprint(err)
 	}
 
