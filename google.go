@@ -45,9 +45,12 @@ func (g *google) cache(ctx context.Context, input *url.URL) (string, error) {
 	return dst.String(), nil
 }
 
-func (g *google) request(ctx context.Context, uri string) (dest *url.URL, err error) {
+func (g *google) request(ctx context.Context, uri string) (*url.URL, error) {
 	endpoint := "https://webcache.googleusercontent.com/search?q=cache:"
 	req, err := http.NewRequestWithContext(ctx, http.MethodGet, endpoint+uri, nil)
+	if err != nil {
+		return nil, err
+	}
 
 	req.Header.Add("User-Agent", userAgent)
 

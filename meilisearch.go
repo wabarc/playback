@@ -46,7 +46,7 @@ func newMeili() *meili {
 	}
 }
 
-func (m *meili) request(ctx context.Context, str string) (b []byte, err error) {
+func (m *meili) request(ctx context.Context, str string) ([]byte, error) {
 	if m.disabled {
 		return nil, errors.New(`meilisearch disabled`)
 	}
@@ -69,6 +69,9 @@ func (m *meili) request(ctx context.Context, str string) (b []byte, err error) {
 	}
 	payload := bytes.NewReader(buf)
 	req, err := http.NewRequestWithContext(ctx, http.MethodPost, m.endpoint, payload)
+	if err != nil {
+		return nil, err
+	}
 	req.Header.Add("Content-Type", "application/json")
 	if m.apikey != "" {
 		req.Header.Add("Authorization", "Bearer "+m.apikey)
@@ -76,17 +79,17 @@ func (m *meili) request(ctx context.Context, str string) (b []byte, err error) {
 
 	resp, err := m.client.Do(req)
 	if err != nil {
-		return b, err
+		return nil, err
 	}
 	defer resp.Body.Close()
 
 	if resp.StatusCode != http.StatusOK {
-		return b, errors.New(resp.Status)
+		return nil, errors.New(resp.Status)
 	}
 
 	body, err := ioutil.ReadAll(resp.Body)
 	if err != nil {
-		return b, err
+		return nil, err
 	}
 
 	return body, nil

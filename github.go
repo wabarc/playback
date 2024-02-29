@@ -27,13 +27,16 @@ func newGitHub() *github {
 	}
 }
 
-func (gh *github) request(ctx context.Context, str string) (b []byte, err error) {
+func (gh *github) request(ctx context.Context, str string) ([]byte, error) {
 	endpoint := "https://api.github.com/search/issues?per_page=1&sort=created&order=desc&q="
 	if repo := os.Getenv("PLAYBACK_GITHUB_REPO"); repo != "" {
 		str += "+repo:" + repo
 	}
 
 	req, err := http.NewRequestWithContext(ctx, http.MethodGet, endpoint+str+"+archived", nil)
+	if err != nil {
+		return nil, err
+	}
 	req.Header.Add("Accept", "application/vnd.github.v3+json")
 	if token := os.Getenv("PLAYBACK_GITHUB_PAT"); token != "" {
 		req.Header.Add("Authorization", "token "+token)
@@ -41,13 +44,13 @@ func (gh *github) request(ctx context.Context, str string) (b []byte, err error)
 
 	resp, err := gh.client.Do(req)
 	if err != nil {
-		return b, err
+		return nil, err
 	}
 	defer resp.Body.Close()
 
 	body, err := ioutil.ReadAll(resp.Body)
 	if err != nil {
-		return b, err
+		return nil, err
 	}
 
 	return body, nil
