@@ -20,6 +20,7 @@ import (
 	"github.com/wabarc/ghostarchive"
 	"github.com/wabarc/logger"
 	"github.com/wabarc/memento"
+	"github.com/wabarc/proxier"
 )
 
 var errNotFound = fmt.Errorf("Not found")
@@ -90,7 +91,8 @@ func (i IA) Playback(ctx context.Context) string {
 }
 
 func (i IS) Playback(ctx context.Context) string {
-	arc := &is.Archiver{}
+	client := proxier.NewClient(nil).Client
+	arc := is.NewArchiver(client)
 	dst, err := arc.Playback(ctx, i.URL)
 	if err != nil {
 		logger.Error("[playback] %s from archive.today failed: %v", i.URL.String(), err)
