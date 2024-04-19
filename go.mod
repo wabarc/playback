@@ -11,6 +11,7 @@ require (
 	github.com/wabarc/helper v0.0.0-20230418130954-be7440352bcb
 	github.com/wabarc/logger v0.0.0-20210730133522-86bd3f31e792
 	github.com/wabarc/memento v0.0.0-20221023035729-e42d0fe1cefb
+	github.com/wabarc/proxier v0.0.0-20230610135141-b55fe1536465
 )
 
 require (
@@ -27,10 +28,9 @@ require (
 	github.com/mattn/go-isatty v0.0.20 // indirect
 	github.com/quic-go/quic-go v0.41.0 // indirect
 	github.com/refraction-networking/utls v1.6.3 // indirect
-	github.com/wabarc/proxier v0.0.0-20230610135141-b55fe1536465 // indirect
-	golang.org/x/crypto v0.20.0 // indirect
-	golang.org/x/net v0.21.0 // indirect
-	golang.org/x/sys v0.17.0 // indirect
+	golang.org/x/crypto v0.21.0 // indirect
+	golang.org/x/net v0.23.0 // indirect
+	golang.org/x/sys v0.18.0 // indirect
 	golang.org/x/text v0.14.0 // indirect
 	mvdan.cc/xurls/v2 v2.5.0 // indirect
 )
