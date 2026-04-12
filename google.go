@@ -63,7 +63,7 @@ func (g *google) request(ctx context.Context, uri string) (*url.URL, error) {
 
 	if resp.StatusCode != http.StatusOK {
 		logger.Debug("[playback] google cache status code: %d", resp.StatusCode)
-		return nil, fmt.Errorf(resp.Status)
+		return nil, fmt.Errorf("%s", resp.Status)
 	}
 
 	return resp.Request.URL, nil
