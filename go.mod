@@ -20,7 +20,7 @@ require (
 	github.com/fatih/color v1.19.0 // indirect
 	github.com/fortytw2/leaktest v1.3.0 // indirect
 	github.com/kennygrant/sanitize v1.2.4 // indirect
-	github.com/klauspost/compress v1.18.5 // indirect
+	github.com/klauspost/compress v1.18.7 // indirect
 	github.com/mattn/go-colorable v0.1.14 // indirect
 	github.com/mattn/go-isatty v0.0.21 // indirect
 	github.com/refraction-networking/utls v1.8.2 // indirect
